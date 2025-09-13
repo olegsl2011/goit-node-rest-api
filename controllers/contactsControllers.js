@@ -3,8 +3,18 @@ import * as contactsServices from "../services/contactsServices.js";
 
 export const getAllContacts = async (req, res) => {
   try {
-    const contactsList = await contactsServices.getContactsList();
-    res.status(200).json(contactsList);
+    const { page, limit, favorite } = req.query;
+    const paginationOptions = {};
+
+    if (page) paginationOptions.page = page;
+    if (limit) paginationOptions.limit = limit;
+    if (favorite) paginationOptions.favorite = favorite;
+
+    const result = await contactsServices.getContactsList(
+      req.user.id,
+      paginationOptions
+    );
+    res.status(200).json(result);
   } catch (error) {
     console.error("Error fetching contacts:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -13,7 +23,10 @@ export const getAllContacts = async (req, res) => {
 
 export const getContact = async (req, res) => {
   try {
-    const contact = await contactsServices.getContactById(req.params.id);
+    const contact = await contactsServices.getContactById(
+      req.params.id,
+      req.user.id
+    );
     if (!contact) {
       throw HttpError(404);
     }
@@ -27,7 +40,10 @@ export const getContact = async (req, res) => {
 
 export const deleteContact = async (req, res) => {
   try {
-    const removedContact = await contactsServices.removeContact(req.params.id);
+    const removedContact = await contactsServices.removeContact(
+      req.params.id,
+      req.user.id
+    );
     if (!removedContact) {
       throw HttpError(404);
     }
@@ -50,6 +66,7 @@ export const createContact = async (req, res) => {
       name,
       email,
       phone,
+      owner: req.user.id,
     });
     res.status(201).json(newContact);
   } catch (error) {
@@ -65,7 +82,8 @@ export const updateContact = async (req, res) => {
     if (name || email || phone) {
       const updated = await contactsServices.updateContactById(
         req.params.id,
-        req.body
+        req.body,
+        req.user.id
       );
       if (!updated) return res.status(404).json({ message: "Not found" });
       res.json(updated);
@@ -85,10 +103,10 @@ export const updateFavorite = async (req, res) => {
     if (favorite === undefined) {
       throw HttpError(400, "Missing field favorite");
     }
-
     const updatedContact = await contactsServices.updateFavoriteStatus(
       req.params.id,
-      favorite
+      favorite,
+      req.user.id
     );
     if (!updatedContact) {
       throw HttpError(404);

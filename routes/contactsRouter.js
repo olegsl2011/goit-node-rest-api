@@ -17,7 +17,11 @@ import {
   updateFavorite,
 } from "../controllers/contactsControllers.js";
 
+import { authMiddleware } from "../middlewares/authMiddleware.js";
+
 const contactsRouter = express.Router();
+
+contactsRouter.use(authMiddleware);
 
 contactsRouter.get("/", getAllContacts);
 
