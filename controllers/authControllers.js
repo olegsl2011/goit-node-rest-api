@@ -8,6 +8,7 @@ export const register = async (req, res) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarUrl: newUser.avatarUrl,
       },
     });
   } catch (error) {
@@ -62,6 +63,25 @@ export const updateSubscription = async (req, res) => {
     const updatedUser = await authServices.updateUserSubscription(
       req.user.id,
       subscription
+    );
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    const { status = 500, message = "Internal Server Error" } = error;
+    res.status(status).json({ message });
+  }
+};
+
+export const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Avatar file is required" });
+    }
+
+    const avatarUrl = `/avatars/${req.file.filename}`;
+
+    const updatedUser = await authServices.updateUserAvatar(
+      req.user.id,
+      avatarUrl
     );
     res.status(200).json(updatedUser);
   } catch (error) {

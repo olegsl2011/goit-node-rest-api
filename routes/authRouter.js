@@ -4,6 +4,7 @@ import { userSchema, subscriptionSchema } from "../schemas/authSchemas.js";
 
 import validateBody from "../helpers/validateBody.js";
 import { authMiddleware } from "../middlewares/authMiddleware.js";
+import upload from "../config/multerConfig.js";
 
 import {
   register,
@@ -11,6 +12,7 @@ import {
   logout,
   getCurrentUser,
   updateSubscription,
+  uploadAvatar,
 } from "../controllers/authControllers.js";
 
 const authRouter = express.Router();
@@ -24,6 +26,13 @@ authRouter.patch(
   authMiddleware,
   validateBody(subscriptionSchema),
   updateSubscription
+);
+
+authRouter.patch(
+  "/avatars",
+  authMiddleware,
+  upload.single("avatar"),
+  uploadAvatar
 );
 
 export default authRouter;
