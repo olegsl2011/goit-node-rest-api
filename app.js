@@ -1,5 +1,4 @@
 import "dotenv/config";
-
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
@@ -18,6 +17,8 @@ app.use(morgan("tiny"));
 app.use(cors());
 app.use(express.json());
 app.use(passport.initialize());
+
+app.use(express.static("public"));
 
 app.use("/api/contacts", contactsRouter);
 app.use("/api/auth", authRouter);

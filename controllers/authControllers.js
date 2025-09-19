@@ -8,6 +8,7 @@ export const register = async (req, res) => {
       user: {
         email: newUser.email,
         subscription: newUser.subscription,
+        avatarUrl: newUser.avatarUrl,
       },
     });
   } catch (error) {
@@ -64,6 +65,53 @@ export const updateSubscription = async (req, res) => {
       subscription
     );
     res.status(200).json(updatedUser);
+  } catch (error) {
+    const { status = 500, message = "Internal Server Error" } = error;
+    res.status(status).json({ message });
+  }
+};
+
+export const uploadAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "Avatar file is required" });
+    }
+
+    const avatarUrl = `/avatars/${req.file.filename}`;
+
+    const updatedUser = await authServices.updateUserAvatar(
+      req.user.id,
+      avatarUrl
+    );
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    const { status = 500, message = "Internal Server Error" } = error;
+    res.status(status).json({ message });
+  }
+};
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { verificationToken } = req.params;
+    await authServices.verifyUser(verificationToken);
+
+    res.status(200).json({ message: "Verification successful" });
+  } catch (error) {
+    const { status = 500, message = "Internal Server Error" } = error;
+    res.status(status).json({ message });
+  }
+};
+
+export const resendVerification = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const result = await authServices.resendVerificationEmail(email);
+    res.status(200).json(result);
   } catch (error) {
     const { status = 500, message = "Internal Server Error" } = error;
     res.status(status).json({ message });
